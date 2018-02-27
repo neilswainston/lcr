@@ -21,8 +21,14 @@ def main(args):
 
     entries = genie.get_order()
 
-    for entry in entries:
-        print '\t'.join([str(val) if val else '' for val in entry])
+    with open('out.txt', 'w') as out:
+        out.write('\t'.join(['id', 'name', 'type', 'subtype', 'description',
+                             'sequence']))
+        out.write('\n')
+
+        for entry in entries:
+            out.write('\t'.join([str(val) if val else '' for val in entry]))
+            out.write('\n')
 
 
 if __name__ == '__main__':
