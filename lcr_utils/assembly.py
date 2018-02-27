@@ -57,6 +57,15 @@ class AssemblyThread(BuildGenieBase):
         worklist = []
 
         for dest_idx, ice_id in enumerate(sorted(pools)):
+            vol_dominoes = len(pools[ice_id]['dominoes']) * vol
+
+            # Add water:
+            well = self._comp_well[_WATER][dest_idx]
+            worklist.append([dest_plate_id, dest_idx, well[1],
+                             well[0], str(500 - vol_dominoes),
+                             _WATER, _WATER, '',
+                             ice_id])
+
             for domino in pools[ice_id]['dominoes']:
                 src_well = self._comp_well[domino[1]]
 
