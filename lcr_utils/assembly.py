@@ -9,6 +9,7 @@ To view a copy of this license, visit <http://opensource.org/licenses/MIT/>.
 '''
 # pylint: disable=too-many-arguments
 from _collections import defaultdict
+import csv
 from itertools import cycle
 import os
 from shutil import rmtree
@@ -99,33 +100,32 @@ class AssemblyThread(BuildGenieBase):
     def _write_worklist_header(self, dest_plate_id):
         '''Write worklist.'''
         worklist_id = dest_plate_id + '_worklist'
-        outfile = os.path.join(self.__outdir, worklist_id + '.txt')
+        outfile = os.path.join(self.__outdir, worklist_id + '.csv')
 
-        with open(outfile, 'a+') as out:
-            out.write('\t'.join(_WORKLIST_COLS) + '\n')
+        writer = csv.writer(open(outfile, 'a+'))
+        writer.writerow(_WORKLIST_COLS)
 
     def _write_worklist(self, dest_plate_id, worklist):
         '''Write worklist.'''
         worklist_id = dest_plate_id + '_worklist'
-        outfile = os.path.join(self.__outdir, worklist_id + '.txt')
+        outfile = os.path.join(self.__outdir, worklist_id + '.csv')
 
-        with open(outfile, 'a+') as out:
-            worklist_map = defaultdict(list)
+        writer = csv.writer(open(outfile, 'a+'))
+        worklist_map = defaultdict(list)
 
-            for entry in sorted(worklist, key=lambda x: x[3]):
-                worklist_map[entry[1]].append(entry)
+        for entry in sorted(worklist, key=lambda x: x[3]):
+            worklist_map[entry[1]].append(entry)
 
-            for idx in cycle(range(0, self.__rows * self.__cols)):
-                if worklist_map[idx]:
-                    entry = worklist_map[idx].pop(0)
-                    out.write('\t'.join([plate_utils.get_well(val)
-                                         if idx == 1 or idx == 3
-                                         else str(val)
-                                         for idx, val in enumerate(entry)]) +
-                              '\n')
+        for idx in cycle(range(0, self.__rows * self.__cols)):
+            if worklist_map[idx]:
+                entry = worklist_map[idx].pop(0)
+                writer.writerow([plate_utils.get_well(val)
+                                 if idx == 1 or idx == 3
+                                 else str(val)
+                                 for idx, val in enumerate(entry)])
 
-                if not sum([len(lst) for lst in worklist_map.values()]):
-                    break
+            if not sum([len(lst) for lst in worklist_map.values()]):
+                break
 
     def __get_comp_well(self, plate_id, components):
         '''Gets component-well map.'''
@@ -151,24 +151,20 @@ class AssemblyThread(BuildGenieBase):
 
     def _write_comp_wells(self, plate_id, comp_wells):
         '''Write component-well map.'''
-        outfile = os.path.join(self.__outdir, plate_id + '.txt')
+        outfile = os.path.join(self.__outdir, plate_id + '.csv')
 
-        with open(outfile, 'a+') as out:
-            for comp, wells in sorted(comp_wells.iteritems(),
-                                      key=lambda (_, v): v[0]):
+        writer = csv.writer(open(outfile, 'a+'))
+        for comp, wells in sorted(comp_wells.iteritems(),
+                                  key=lambda (_, v): v[0]):
 
-                if isinstance(wells[0], int):
-                    self.__write_comp_well(out, wells, comp)
-                else:
-                    for well in wells:
-                        self.__write_comp_well(out, well, comp)
+            if isinstance(wells[0], int):
+                self.__write_comp_well(writer, wells, comp)
+            else:
+                for well in wells:
+                    self.__write_comp_well(writer, well, comp)
 
-    def __write_comp_well(self, out, well, comp):
+    def __write_comp_well(self, writer, well, comp):
         '''Write line on component-well map.'''
-        outstr = '%s\t%s\t' % (plate_utils.get_well(well[0],
-                                                    self.__rows,
-                                                    self.__cols),
-                               comp)
-        out.write(outstr)
-        out.write('\t'.join(str(val) for val in well[2]))
-        out.write('\n')
+        writer.writerow([plate_utils.get_well(well[0], self.__rows,
+                                              self.__cols),
+                         comp] + [str(val) for val in well[2]])
