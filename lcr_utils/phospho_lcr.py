@@ -38,7 +38,7 @@ class PhosphoLcrThread(AssemblyThread):
 
         # Write domino pools worklist:
         self._comp_well.update(
-            self._write_dom_pool_worklist(pools, 'domino_pools', 3))
+            self._write_dom_pool_worklist(pools, 'domino_pools', 1.75))
 
         # Write LCR worklist:
         self._comp_well.update(

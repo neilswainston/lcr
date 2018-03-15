@@ -62,7 +62,7 @@ class AssemblyThread(BuildGenieBase):
             # Add water:
             well = self._comp_well[_WATER][dest_idx]
             worklist.append([dest_plate_id, dest_idx, well[1],
-                             well[0], str(500 - vol_dominoes),
+                             well[0], str(250 - vol_dominoes),
                              _WATER, _WATER, '',
                              ice_id])
 
